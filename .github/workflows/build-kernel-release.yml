@@ -7,18 +7,8 @@ permissions:
 on:
   workflow_dispatch:
     inputs:
-      build_op11:
-        description: 'Build OP 11 kernel?'
-        required: true
-        type: boolean
-        default: true
-      build_op11r:
-        description: 'Build OP 11r kernel?'
-        required: true
-        type: boolean
-        default: true
-      build_op12:
-        description: 'Build OP 12 kernel?'
+      build_op_ace_5:
+        description: 'Build OP Ace 5 kernel?'
         required: true
         type: boolean
         default: true
@@ -29,25 +19,15 @@ on:
         default: false
 
 jobs:
-  build-kernel-op11:
-    uses: ./.github/workflows/build-kernel-op11.yml
+  build-kernel-op_ace_5:
+    uses: ./.github/workflows/build-kernel-op-ace5.yml
     secrets: inherit
-    if: ${{ inputs.build_op11 }}
-  build-kernel-op11r:
-    uses: ./.github/workflows/build-kernel-op11r.yml
-    secrets: inherit
-    if: ${{ inputs.build_op11r }}
-  build-kernel-op12:
-    uses: ./.github/workflows/build-kernel-op12.yml
-    secrets: inherit
-    if: ${{ inputs.build_op12 }}
+    if: ${{ inputs.build_op_ace_5 }}
 
   trigger-release:
     runs-on: ubuntu-latest
     needs:
-        - build-kernel-op11
-        - build-kernel-op11r
-        - build-kernel-op12
+        - build-kernel-op_ace_5
     if: ${{ inputs.make_release }}
     env:
       REPO_OWNER: TheWildJames
