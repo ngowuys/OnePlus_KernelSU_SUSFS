@@ -1,4 +1,4 @@
-name: Build OnePlus 12 Android 14 6.1 Kernel
+name: Build OnePlus Ace 5 Android 14 6.1 Kernel
 
 on:
   workflow_call:  # This allows this workflow to be called from another workflow
@@ -18,16 +18,15 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
       
-      - name: Set CONFIG Environment Variable
+      - name: Set Environment Variable
         run: |
           # Set CONFIG dynamically based on matrix values
-          CONFIG="op12"
+          CONFIG="op_ace_5"
           
           # Set CONFIG as an environment variable for future steps
           echo "CONFIG=$CONFIG" >> $GITHUB_ENV
           
           echo "CONFIG set to: $CONFIG"
-
       - name: Install Repo
         run: |
           # Install dependencies
@@ -48,7 +47,13 @@ jobs:
           git clone https://github.com/WildPlusKernel/AnyKernel3.git -b "gki"
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
           git clone https://github.com/WildPlusKernel/kernel_patches.git
-      
+
+          # Set current dir to ENV
+          CURRENT_DIR=$(pwd)
+          echo "CURRENT_DIR=$CURRENT_DIR" >> $GITHUB_ENV
+
+          echo "CURRENT_DIR set to: $CURRENT_DIR"
+
       - name: Initialize and Sync Kernel Source
         run: |
           echo "Creating folder for configuration: $CONFIG..."
@@ -79,14 +84,14 @@ jobs:
           echo "Applying SUSFS patches..."
           
           # Copy SUSFS patches
-          cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU-Next/
-          cp ../../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch ./common/
-          cp ../../susfs4ksu/kernel_patches/fs/* ./common/fs/
-          cp ../../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
+          cp $CURRENT_DIR/susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU-Next/
+          cp $CURRENT_DIR/susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch ./common/
+          cp $CURRENT_DIR/susfs4ksu/kernel_patches/fs/* ./common/fs/
+          cp $CURRENT_DIR/susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
           
           echo "Applying SUSFS patches for KernelSU-Next..."
           cd ./KernelSU-Next
-          cp ../../kernel_patches/KernelSU-Next-Implement-SUSFS-v1.5.5-Universal.patch ./
+          cp $CURRENT_DIR/kernel_patches/KernelSU-Next-Implement-SUSFS-v1.5.5-Universal.patch ./
           patch -p1 --forward < KernelSU-Next-Implement-SUSFS-v1.5.5-Universal.patch || true
           
           # Change to common directory and apply SUSFS patch
@@ -98,7 +103,7 @@ jobs:
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG/kernel_platform/common"
           # Apply additional patch
-          cp ../../../kernel_patches/69_hide_stuff.patch ./
+          cp $CURRENT_DIR/kernel_patches/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
 
       - name: Add SUSFS Configuration Settings
@@ -168,7 +173,7 @@ jobs:
           cd "$CONFIG"
           
           echo "Copying Image"
-          cp ./out/dist/Image ../AnyKernel3/Image
+          cp ./out/dist/Image $CURRENT_DIR/AnyKernel3/Image
           
       - name: Create ZIP Files for Different Formats
         run: |
